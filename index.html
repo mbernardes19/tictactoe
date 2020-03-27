@@ -21,8 +21,8 @@
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             grid-template-columns: 1fr 1fr 1fr;
-            height: 400px;
-            width: 600px;
+            height: 1000px;
+            width: 85%;
             margin-top: 100px;
             border: 1px solid black;
         }
@@ -115,14 +115,12 @@
             Xselect.onclick = (event) => {
                 chooseXOrO('X');
                 Xselect.style.backgroundColor = 'red';
-                Oselect.style.backgroundColor = 'white';
-                socket.emit('X chosen by player', socket.id)
+                socket.emit('X chosen by player', (socket.id))
             }
             Oselect.onclick = (event) => {
                 chooseXOrO('O');
                 Oselect.style.backgroundColor = 'red';
-                Xselect.style.backgroundColor = 'white';            
-                socket.emit('O chosen by player', socket.id)
+                socket.emit('O chosen by player', (socket.id))
             }
 
             squares.forEach(square => {
@@ -131,10 +129,25 @@
                 }
             })
 
+            socket.on('X chosen by player', (socketId) => {
+                if (socket.id !== socketId) {
+                    const Xchoose = document.querySelector('#X');
+                    Xchoose.style.backgroundColor = 'grey';
+                }
+            })
+
+            socket.on('O chosen by player', (socketId) => {
+                if (socket.id !== socketId) {
+                    const Ochoose = document.querySelector('#O');
+                    Ochoose.style.backgroundColor = 'grey';
+                }
+            })
+
+
             socket.on(`X inserted`, (selected) => {
                 const square = document.getElementById(selected.elementId);
                 const mark = document.createElement('div');
-                mark.style.fontSize = '30px';
+                mark.style.fontSize = '100px';
                 mark.textContent = selected.type;
                 square.appendChild(mark);
             })
@@ -142,7 +155,7 @@
             socket.on(`O inserted`, (selected) => {
                 const square = document.getElementById(selected.elementId);
                 const mark = document.createElement('div');
-                mark.style.fontSize = '30px';
+                mark.style.fontSize = '100px';
                 mark.textContent = selected.type;
                 square.appendChild(mark);
             })
@@ -162,6 +175,14 @@
                 message.style.display = 'flex';
                 overlay.style.display = 'block';
             });
+
+            socket.on('draw', () => {
+                const message = document.querySelector('#message');
+                const overlay = document.querySelector('#overlay');
+                message.firstElementChild.textContent = 'Empate!'
+                message.style.display = 'flex';
+                overlay.style.display = 'block';
+            })
 
         }
 
