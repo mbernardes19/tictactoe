@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>        
+        #tic-tac-toe > div {
+            border: 1px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-flow: column wrap;
+        }
+
+        #tic-tac-toe {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
+            height: 400px;
+            width: 600px;
+            margin-top: 100px;
+            border: 1px solid black;
+        }
+
+        #choose {
+            display: flex;
+            justify-content: center;
+            margin-top: 100px;
+            flex-flow: column wrap;
+        }
+
+        #choose-box > div {
+            width: 100px;
+            height: 80px;
+            border: 1px solid black;
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        #choose-box {
+            display: flex;
+            flex-flow: row wrap;
+        }
+
+        #message {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            width: 200px;
+            height: 200px;
+            position: absolute;
+            background-color: wheat;
+            z-index: 3;
+        }
+
+        #message > #content {
+            text-align: center;
+        }
+
+        #overlay {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            opacity: .5;
+            position: absolute;
+            z-index: 2;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="message">
+        <p id="content"></p>
+    </div>
+
+    <div id="overlay"></div>
+
+    <div id="tic-tac-toe">
+        <div id="d1"></div>
+        <div id="d2"></div>
+        <div id="d3"></div>
+        <div id="d4"></div>
+        <div id="d5"></div>
+        <div id="d6"></div>
+        <div id="d7"></div>
+        <div id="d8"></div>
+        <div id="d9"></div>
+    </div>
+
+    <div id="choose">
+        <p>Escolha X ou O</p>
+        <div id="choose-box">
+            <div id="X">X</div>
+            <div id="O">O</div>
+        </div>
+    </div>
+
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let selected = '';
+
+        function init() {
+            const socket = io();
+            const squares = document.querySelectorAll('#tic-tac-toe > div');
+            const Xselect = document.querySelector('#X');
+            const Oselect = document.querySelector('#O');
+
+            Xselect.onclick = (event) => {
+                chooseXOrO('X');
+                Xselect.style.backgroundColor = 'red';
+                Oselect.style.backgroundColor = 'white';
+                socket.emit('X chosen by player', socket.id)
+            }
+            Oselect.onclick = (event) => {
+                chooseXOrO('O');
+                Oselect.style.backgroundColor = 'red';
+                Xselect.style.backgroundColor = 'white';            
+                socket.emit('O chosen by player', socket.id)
+            }
+
+            squares.forEach(square => {
+                square.onclick = () => {
+                    socket.emit(`${getSelected()} inserted`, ({type: getSelected(), elementId: square.id}));
+                }
+            })
+
+            socket.on(`X inserted`, (selected) => {
+                const square = document.getElementById(selected.elementId);
+                const mark = document.createElement('div');
+                mark.style.fontSize = '30px';
+                mark.textContent = selected.type;
+                square.appendChild(mark);
+            })
+
+            socket.on(`O inserted`, (selected) => {
+                const square = document.getElementById(selected.elementId);
+                const mark = document.createElement('div');
+                mark.style.fontSize = '30px';
+                mark.textContent = selected.type;
+                square.appendChild(mark);
+            })
+
+            socket.on('X has won', () => {
+                const message = document.querySelector('#message');
+                const overlay = document.querySelector('#overlay');
+                message.firstElementChild.textContent = 'X venceu!'
+                message.style.display = 'flex';
+                overlay.style.display = 'block';
+            });
+
+            socket.on('O has won', () => {
+                const message = document.querySelector('#message');
+                const overlay = document.querySelector('#overlay');
+                message.firstElementChild.textContent = 'O venceu!'
+                message.style.display = 'flex';
+                overlay.style.display = 'block';
+            });
+
+        }
+
+        function chooseXOrO(select) {
+            selected = select
+        }
+
+        function getSelected() {
+            return selected;
+        }
+
+        init();
+      </script>
+  </body>
+</html>
